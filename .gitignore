@@ -1,0 +1,53 @@
+# Données (brutes et dérivées) : jamais versionnées
+data/raw/*
+data/staging/*
+data/marts/*
+!data/**/.gitkeep
+
+# Bases DuckDB
+*.duckdb
+*.duckdb.wal
+*.wal
+db/*
+!db/.gitkeep
+
+# Fichiers pouvant contenir des données personnelles
+*.xlsx
+*.xls
+*.csv
+*.parquet
+*.jsonl
+*_pii*
+*_personnel*
+exports/
+
+# Secrets et clés API
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+credentials*.json
+.claude/settings.local.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Éditeurs et système
+.vscode/*
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Journaux de l assistant SQL (questions et requêtes)
+logs/
+
+# Copie de travail de la feuille de route (version suivie : docs/use_cases_ia_taches.txt)
+/use_cases_ia_taches.txt

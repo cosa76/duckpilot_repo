@@ -1,0 +1,67 @@
+# Sources chargées par scripts/import_raw.py
+#
+# Pour ajouter une source : déposer le fichier dans data/raw/ et ajouter un bloc [[source]].
+#   table       nom de la table raw cible (préfixe raw_ obligatoire)
+#   fichier     nom du fichier dans data/raw/
+#   format      csv | json | parquet | xlsx
+#   requis      true : fichier absent = échec de l'import ; false : source ignorée avec alerte
+#   colonnes    colonnes attendues. Une colonne manquante bloque l'import,
+#               une colonne en plus produit une alerte.
+#   options     options passées au lecteur DuckDB (csv, json) ou à pandas (xlsx)
+#
+# Règle : CSV et JSON sont lus en texte, le typage se fait en staging.
+
+[[source]]
+table = "raw_ventes"
+fichier = "ventes.csv"
+format = "csv"
+requis = true
+colonnes = ["vente_id", "date_vente", "client_id", "produit_id", "quantite",
+            "prix_unitaire", "remise_pct", "montant_ttc", "canal", "devise"]
+options = { header = true, delim = ",", all_varchar = true }
+
+[[source]]
+table = "raw_produits"
+fichier = "produits.csv"
+format = "csv"
+requis = true
+colonnes = ["produit_id", "libelle", "categorie", "prix_unitaire", "cout_unitaire"]
+options = { header = true, delim = ";", all_varchar = true }
+
+[[source]]
+table = "raw_clients"
+fichier = "clients.xlsx"
+format = "xlsx"
+requis = true
+colonnes = ["client_id", "prenom", "nom", "email", "telephone", "ville",
+            "segment", "date_inscription", "actif"]
+options = { sheet_name = "clients" }
+
+[[source]]
+table = "raw_evenements"
+fichier = "evenements.jsonl"
+format = "json"
+requis = true
+colonnes = ["event_id", "user_id", "event_name", "timestamp", "app_version",
+            "plateforme", "proprietes"]
+
+[source.options]
+format = "newline_delimited"
+
+[source.options.columns]
+event_id = "VARCHAR"
+user_id = "VARCHAR"
+event_name = "VARCHAR"
+timestamp = "VARCHAR"
+app_version = "VARCHAR"
+plateforme = "VARCHAR"
+proprietes = "JSON"
+
+[[source]]
+table = "raw_tickets"
+fichier = "tickets.parquet"
+format = "parquet"
+requis = true
+colonnes = ["ticket_id", "client_id", "date_ouverture", "date_resolution", "categorie",
+            "priorite", "statut", "satisfaction", "description"]
+options = {}

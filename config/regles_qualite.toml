@@ -1,0 +1,225 @@
+# Règles de qualité exécutées par scripts/quality.py après la construction staging.
+#
+#   id          identifiant stable (préfixe = domaine)
+#   table       table contrôlée
+#   regle       ce qui est vérifié, en français
+#   severite    bloquant : le pipeline s'arrête si la règle échoue
+#               alerte   : signalé dans le rapport d'exécution, le pipeline continue
+#   seuil_pct   part de lignes en violation tolérée (0 par défaut)
+#   sql         requête renvoyant deux colonnes : nb_violations, nb_lignes_controlees
+#
+# Chaque exécution est historisée dans la table controles_qualite.
+
+# ---------- Complétude et unicité ----------
+
+[[regle]]
+id = "VEN_01"
+table = "staging_ventes"
+regle = "Clé vente_id unique"
+severite = "bloquant"
+sql = "SELECT count(*) - count(DISTINCT vente_id), count(*) FROM staging_ventes"
+
+[[regle]]
+id = "VEN_02"
+table = "staging_ventes"
+regle = "Champs obligatoires renseignés (date, client, produit, quantité, montant)"
+severite = "bloquant"
+sql = """
+SELECT count(*) FILTER (WHERE date_vente IS NULL OR client_id IS NULL OR produit_id IS NULL
+                           OR quantite IS NULL OR montant_ttc IS NULL),
+       count(*)
+FROM staging_ventes
+"""
+
+[[regle]]
+id = "VEN_03"
+table = "staging_ventes"
+regle = "Plages de valeurs : quantité 1 à 100, montant positif, remise 0 à 50 %"
+severite = "bloquant"
+sql = """
+SELECT count(*) FILTER (WHERE quantite NOT BETWEEN 1 AND 100 OR montant_ttc < 0
+                           OR remise_pct NOT BETWEEN 0 AND 0.5),
+       count(*)
+FROM staging_ventes
+"""
+
+[[regle]]
+id = "VEN_04"
+table = "staging_ventes"
+regle = "Dates de vente entre 2020-01-01 et la date de chargement"
+severite = "bloquant"
+sql = """
+SELECT count(*) FILTER (WHERE date_vente < DATE '2020-01-01' OR date_vente > current_date),
+       count(*)
+FROM staging_ventes
+"""
+
+[[regle]]
+id = "VEN_05"
+table = "staging_ventes"
+regle = "Intégrité référentielle : client et produit connus"
+severite = "bloquant"
+sql = """
+SELECT (SELECT count(*) FROM staging_ventes ANTI JOIN staging_clients USING (client_id))
+     + (SELECT count(*) FROM staging_ventes ANTI JOIN staging_produits USING (produit_id)),
+       (SELECT count(*) FROM staging_ventes)
+"""
+
+[[regle]]
+id = "VEN_06"
+table = "staging_ventes"
+regle = "Conservation : lignes brutes dédoublonnées = staging + rejets"
+severite = "bloquant"
+sql = """
+SELECT abs((SELECT count(*) FROM (SELECT DISTINCT * EXCLUDE (_source_file, _run_id, _loaded_at)
+                                  FROM raw_ventes))
+           - (SELECT count(*) FROM staging_ventes)
+           - (SELECT count(*) FROM rejets WHERE table_source = 'raw_ventes')),
+       (SELECT count(*) FROM raw_ventes)
+"""
+
+[[regle]]
+id = "VEN_07"
+table = "rejets"
+regle = "Taux de rejet des ventes inférieur à 3 %"
+severite = "alerte"
+seuil_pct = 3
+sql = """
+SELECT (SELECT count(*) FROM rejets WHERE table_source = 'raw_ventes'),
+       (SELECT count(*) FROM raw_ventes)
+"""
+
+[[regle]]
+id = "VEN_08"
+table = "staging_ventes"
+regle = "Fraîcheur : dernière vente de moins de 45 jours"
+severite = "alerte"
+sql = """
+SELECT CASE WHEN max(date_vente) < current_date - INTERVAL 45 DAY THEN 1 ELSE 0 END, 1
+FROM staging_ventes
+"""
+
+[[regle]]
+id = "VEN_09"
+table = "staging_ventes"
+regle = "Volume : dernier mois complet au moins à 60 % de la moyenne des 12 mois précédents"
+severite = "alerte"
+sql = """
+WITH m AS (
+    SELECT date_trunc('month', date_vente) AS mois, count(*) AS n
+    FROM staging_ventes GROUP BY 1
+),
+dernier AS (SELECT max(mois) AS mois FROM m)
+SELECT CASE WHEN (SELECT n FROM m, dernier WHERE m.mois = dernier.mois)
+                 < 0.6 * (SELECT avg(n) FROM m, dernier
+                          WHERE m.mois < dernier.mois
+                            AND m.mois >= dernier.mois - INTERVAL 12 MONTH)
+            THEN 1 ELSE 0 END,
+       1
+"""
+
+[[regle]]
+id = "CLI_01"
+table = "staging_clients"
+regle = "Clé client_id unique"
+severite = "bloquant"
+sql = "SELECT count(*) - count(DISTINCT client_id), count(*) FROM staging_clients"
+
+[[regle]]
+id = "CLI_02"
+table = "staging_clients"
+regle = "Aucune colonne de données personnelles en clair"
+severite = "bloquant"
+sql = """
+SELECT count(*), 1 FROM information_schema.columns
+WHERE table_name = 'staging_clients'
+  AND column_name IN ('prenom', 'nom', 'email', 'telephone')
+"""
+
+[[regle]]
+id = "CLI_03"
+table = "staging_clients"
+regle = "Emails invalides ou vides sous 5 %"
+severite = "alerte"
+seuil_pct = 5
+sql = "SELECT count(*) FILTER (WHERE NOT email_valide), count(*) FROM staging_clients"
+
+[[regle]]
+id = "CLI_04"
+table = "staging_clients"
+regle = "Doublons probables de clients (même email) à fusionner"
+severite = "alerte"
+sql = "SELECT count(*) FILTER (WHERE doublon_de IS NOT NULL), count(*) FROM staging_clients"
+
+[[regle]]
+id = "PRO_01"
+table = "staging_produits"
+regle = "Coût unitaire inférieur ou égal au prix"
+severite = "alerte"
+sql = "SELECT count(*) FILTER (WHERE cout_superieur_prix), count(*) FROM staging_produits"
+
+[[regle]]
+id = "EVT_01"
+table = "staging_evenements"
+regle = "Clé event_id unique"
+severite = "bloquant"
+sql = "SELECT count(*) - count(DISTINCT event_id), count(*) FROM staging_evenements"
+
+[[regle]]
+id = "EVT_02"
+table = "staging_evenements"
+regle = "Horodatage renseigné et non futur"
+severite = "bloquant"
+sql = """
+SELECT count(*) FILTER (WHERE event_ts IS NULL OR event_ts > now()), count(*)
+FROM staging_evenements
+"""
+
+[[regle]]
+id = "EVT_03"
+table = "rejets"
+regle = "Taux de rejet des évènements inférieur à 1 %"
+severite = "alerte"
+seuil_pct = 1
+sql = """
+SELECT (SELECT count(*) FROM rejets WHERE table_source = 'raw_evenements'),
+       (SELECT count(*) FROM raw_evenements)
+"""
+
+[[regle]]
+id = "TIC_01"
+table = "staging_tickets"
+regle = "Clé ticket_id unique"
+severite = "bloquant"
+sql = "SELECT count(*) - count(DISTINCT ticket_id), count(*) FROM staging_tickets"
+
+[[regle]]
+id = "TIC_02"
+table = "staging_tickets"
+regle = "Aucun email ni téléphone dans les descriptions"
+severite = "bloquant"
+sql = """
+SELECT count(*) FILTER (WHERE regexp_matches(description,
+           '[^@\\s]+@[^@\\s]+\\.[a-z]+|0\\d([ .]?\\d{2}){4}')),
+       count(*)
+FROM staging_tickets
+"""
+
+[[regle]]
+id = "TIC_03"
+table = "staging_tickets"
+regle = "Délai de résolution positif et satisfaction entre 1 et 5"
+severite = "bloquant"
+sql = """
+SELECT count(*) FILTER (WHERE delai_resolution_h < 0 OR satisfaction NOT BETWEEN 1 AND 5),
+       count(*)
+FROM staging_tickets
+"""
+
+[[regle]]
+id = "TIC_04"
+table = "staging_tickets"
+regle = "Tickets avec dates incohérentes sous 2 %"
+severite = "alerte"
+seuil_pct = 2
+sql = "SELECT count(*) FILTER (WHERE anomalie IS NOT NULL), count(*) FROM staging_tickets"

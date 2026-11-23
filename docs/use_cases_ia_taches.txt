@@ -1,0 +1,495 @@
+USE CASES IA - VS CODE + DUCKDB + CLAUDE CODE + CLAUDE API
+============================================================
+
+Objectif : mettre en place un socle local d'intelligence artificielle
+pour l'analyse de donnees, l'assistance au developpement et l'automatisation.
+
+Principes :
+- Les donnees restent en local dans DuckDB.
+- Claude Code assiste l'ecriture de code, SQL et transformations.
+- L'API Claude est reservee aux taches de raisonnement, synthese,
+  classification, extraction et generation de rapports.
+- Toute ecriture en base ou modification de fichier doit etre validee.
+
+------------------------------------------------------------
+1. PREPARATION DE L'ENVIRONNEMENT
+------------------------------------------------------------
+[ ] Creer un dossier projet dedie, par exemple : ia-copilot/
+[ ] Creer l'arborescence :
+    ia-copilot/
+      data/raw/
+      data/staging/
+      data/marts/
+      db/
+      sql/
+      reports/
+      scripts/
+      tests/
+      docs/
+[ ] Installer et verifier DuckDB en local.
+[ ] Installer l'extension Claude Code dans VS Code.
+[ ] Configurer la cle API Claude dans une variable d'environnement,
+    jamais dans un fichier versionne.
+[ ] Creer un depot Git avec .gitignore protegeant :
+    - les donnees brutes
+    - les bases DuckDB
+    - les fichiers contenant des informations personnelles
+    - les secrets et cles API
+[ ] Creer un fichier CLAUDE.md decrivant :
+    - le contexte du projet
+    - les conventions de nommage
+    - les regles SQL
+    - les donnees sensibles interdites
+    - les commandes autorisees et interdites
+[ ] Creer un fichier README.md expliquant comment lancer le pipeline.
+
+------------------------------------------------------------
+2. SOCLE DATA : IMPORT ET QUALITE
+------------------------------------------------------------
+[ ] Identifier les premieres sources de donnees :
+    - exports CSV
+    - fichiers Excel
+    - fichiers JSON
+    - fichiers Parquet
+    - logs applicatifs
+    - donnees de facturation
+    - donnees produit / evenements utilisateurs
+[ ] Placer les fichiers sources dans data/raw/ sans les modifier.
+[ ] Creer une base DuckDB : db/analytics.duckdb
+[ ] Creer un script d'import pour chaque format source.
+[ ] Charger les donnees dans des tables brutes, par exemple :
+    - raw_ventes
+    - raw_clients
+    - raw_evenements
+    - raw_tickets
+[ ] Generer un profil automatique de chaque table :
+    - nombre de lignes
+    - colonnes et types
+    - valeurs manquantes
+    - doublons
+    - valeurs extremes
+    - distributions principales
+[ ] Documenter le dictionnaire des donnees dans docs/dictionnaire_donnees.md
+[ ] Definir les regles de qualite :
+    - champs obligatoires
+    - formats de dates
+    - unicite des identifiants
+    - plages de valeurs acceptables
+    - regles de dedoublonnage
+[ ] Creer un script de controle qualite executant ces regles.
+[ ] Creer des tables nettoyees dans data/staging/ :
+    - staging_ventes
+    - staging_clients
+    - staging_evenements
+[ ] Conserver une trace des transformations appliquees.
+
+------------------------------------------------------------
+3. USE CASE 1 : ANALYSTE DE DONNEES LOCAL
+------------------------------------------------------------
+Objectif :
+Permettre a Claude de repondre a des questions metier sur les donnees
+locales via DuckDB, puis produire une analyse claire.
+
+[ ] Creer une vue metier propre a partir des tables staging.
+[ ] Definir 5 a 10 indicateurs utiles, par exemple :
+    - chiffre d'affaires
+    - marge
+    - nombre de clients actifs
+    - taux de conversion
+    - taux de retention
+    - churn
+    - nombre d'incidents
+    - delai moyen de resolution
+[ ] Ecrire les requetes SQL correspondantes dans sql/.
+[ ] Tester chaque requete sur un echantillon de donnees.
+[ ] Creer un prompt type :
+    "Analyse ce fichier avec DuckDB. Profile les colonnes, identifie
+     les anomalies, cree une table propre, puis reponds a la question
+     suivante : [QUESTION]. Sauvegarde le SQL et le rapport."
+[ ] Demander a Claude de produire un rapport Markdown dans reports/.
+[ ] Ajouter les graphiques necessaires :
+    - evolution dans le temps
+    - repartition par categorie
+    - comparaison de segments
+    - anomalies
+[ ] Mettre en place une commande reproductible pour relancer l'analyse.
+[ ] Verifier manuellement les premiers resultats avant diffusion.
+
+Livrable attendu :
+- Base DuckDB propre
+- Requetes SQL versionnees
+- Rapport d'analyse automatique
+- Reponses aux questions metier avec sources et methodologie
+
+------------------------------------------------------------
+4. USE CASE 2 : COPILOTE DE CODE SUR VOTRE REPO
+------------------------------------------------------------
+Objectif :
+Utiliser Claude Code pour comprendre, securiser et améliorer votre
+base de code directement depuis VS Code.
+
+[ ] Ouvrir le depot principal dans VS Code.
+[ ] Autoriser Claude Code uniquement sur les dossiers necessaires.
+[ ] Demander une cartographie du projet :
+    - modules principaux
+    - dependances
+    - points d'entree
+    - flux de donnees
+    - zones a risque
+[ ] Generer une documentation d'architecture dans docs/architecture.md
+[ ] Identifier :
+    - code mort
+    - fonctions non testees
+    - dependances obsoletees
+    - failles potentielles
+    - zones de dette technique
+[ ] Creer une liste prioritaire des corrections.
+[ ] Demander des correctifs par petites etapes, avec tests.
+[ ] Generer des tests unitaires pour les fonctions critiques.
+[ ] Demander une revue de securite sur :
+    - gestion des secrets
+    - entrees utilisateur
+    - requetes SQL
+    - permissions fichiers
+    - dependances
+[ ] Creer une regle : aucune modification directe en production.
+[ ] Utiliser des branches Git et des pull requests pour chaque chantier.
+[ ] Documenter chaque refactoring dans docs/changelog_technique.md
+
+Livrable attendu :
+- Cartographie du code
+- Plan de refactoring
+- Tests supplementaires
+- Documentation a jour
+- Correctifs valides par revision humaine
+
+------------------------------------------------------------
+5. USE CASE 3 : PIPELINE ETL / NORMALISATION
+------------------------------------------------------------
+Objectif :
+Automatiser la transformation de fichiers desorganises en donnees
+propres, requetables et reutilisables.
+
+[ ] Lister les fichiers recurrents a traiter.
+[ ] Definir un format cible standard, par exemple Parquet.
+[ ] Creer un script d'ingestion generique.
+[ ] Normaliser les noms de colonnes.
+[ ] Convertir les dates dans un format unique.
+[ ] Harmoniser les categories et codes.
+[ ] Supprimer ou isoler les doublons.
+[ ] Gerer les valeurs manquantes selon une regle explicite.
+[ ] Creer une table d'erreurs pour les lignes rejetees.
+[ ] Generer un rapport d'execution :
+    - fichiers traites
+    - lignes lues
+    - lignes validees
+    - lignes rejetees
+    - erreurs principales
+[ ] Planifier l'execution manuelle ou automatique selon le besoin.
+[ ] Verifier que les fichiers sources ne sont jamais modifies.
+
+Livrable attendu :
+- Fichiers sources immuables
+- Tables DuckDB nettoyees
+- Rapport de qualite
+- Processus reproductible
+
+------------------------------------------------------------
+6. USE CASE 4 : EXTRACTION STRUCTUREE DE DOCUMENTS
+------------------------------------------------------------
+Objectif :
+Transformer des documents non structures en donnees exploitables
+dans DuckDB.
+
+Types de documents possibles :
+- factures
+- devis
+- contrats
+- CV
+- notes de reunion
+- comptes rendus
+- tickets support
+- emails professionnels non sensibles
+
+[ ] Choisir un premier type de document simple.
+[ ] Creer un dossier documents/ avec les fichiers a traiter.
+[ ] Definir le schema JSON attendu.
+[ ] Exemple pour une facture :
+    {
+      "fournisseur": "",
+      "numero_facture": "",
+      "date_facture": "",
+      "montant_ht": 0,
+      "tva": 0,
+      "montant_ttc": 0,
+      "devise": "",
+      "categorie": "",
+      "confiance": 0.0
+    }
+[ ] Utiliser l'API Claude pour extraire les champs.
+[ ] Valider les champs obligatoires et les formats.
+[ ] Enregistrer les resultats dans une table DuckDB.
+[ ] Conserver le document source et son identifiant.
+[ ] Signaler les extractions a faible confiance.
+[ ] Mettre en place une revue humaine pour les documents sensibles.
+[ ] Creer des requetes d'analyse :
+    - total par fournisseur
+    - total par mois
+    - factures en retard
+    - categories de depenses
+
+Livrable attendu :
+- Table DuckDB structuree
+- Extraction JSON controlee
+- Rapport d'anomalies
+- Recherche et agregations possibles
+
+------------------------------------------------------------
+7. USE CASE 5 : ANALYSE PRODUIT ET USAGE
+------------------------------------------------------------
+Objectif :
+Comprendre l'usage reel de votre logiciel a partir des evenements,
+erreurs et donnees de facturation.
+
+[ ] Importer les evenements utilisateurs dans DuckDB.
+[ ] Importer les donnees de comptes, abonnements et facturation.
+[ ] Importer les erreurs, crashes et tickets support.
+[ ] Creer une table d'evenements normalisee :
+    - user_id
+    - event_name
+    - timestamp
+    - version application
+    - plateforme
+    - propriétés supplementaires
+[ ] Calculer les indicateurs :
+    - utilisateurs actifs quotidiens / mensuels
+    - activation
+    - retention J1, J7, J30
+    - churn
+    - fonctionnalites les plus utilisees
+    - parcours d'abandon
+    - taux d'erreur par version
+    - temps avant premier usage utile
+[ ] Identifier les segments d'utilisateurs :
+    - nouveaux
+    - actifs
+    - inactifs
+    - payants
+    - a risque de churn
+[ ] Generer un rapport hebdomadaire automatique.
+[ ] Proposer 3 hypotheses d'amélioration produit par rapport.
+[ ] Valider les hypotheses avec des donnees complementaires.
+
+Livrable attendu :
+- Tableau de bord local ou rapport hebdomadaire
+- KPI produit fiables
+- Liste d'actions prioritaires
+
+------------------------------------------------------------
+8. USE CASE 6 : ASSISTANT DOCUMENTAIRE / RAG LOCAL
+------------------------------------------------------------
+Objectif :
+Creer un assistant capable de repondre aux questions sur votre
+documentation, code, tickets et decisions internes.
+
+[ ] Rassembler les sources utiles :
+    - documentation produit
+    - documentation technique
+    - tickets
+    - decisions d'architecture
+    - changelogs
+    - FAQ
+    - notes de reunion non sensibles
+[ ] Nettoyer et structurer les documents.
+[ ] Extraire les metadonnees :
+    - titre
+    - date
+    - type
+    - projet
+    - version
+    - auteur
+    - statut
+[ ] Indexer le contenu pour recherche semantique.
+[ ] Creer une table DuckDB des metadonnees.
+[ ] Utiliser l'API Claude pour repondre aux questions.
+[ ] Toujours afficher les sources utilisees.
+[ ] Interdire les reponses sans source verifiable.
+[ ] Ajouter une validation humaine pour les sujets sensibles.
+[ ] Tester avec 20 questions frequentes.
+[ ] Mesurer la qualite des reponses et corriger l'indexation.
+
+Livrable attendu :
+- Assistant interne avec reponses sourcees
+- Recherche rapide dans la documentation
+- Reduction du temps d'onboarding
+
+------------------------------------------------------------
+9. USE CASE 7 : GENERATEUR DE REQUETES SQL
+------------------------------------------------------------
+Objectif :
+Permettre a un utilisateur non technique de poser une question en
+francais et obtenir une requete SQL fiable, expliquee et securisee.
+
+[ ] Creer un catalogue des tables disponibles.
+[ ] Documenter chaque colonne et sa signification.
+[ ] Definir les jointures autorisees.
+[ ] Definir les mesures et dimensions metier.
+[ ] Creer un prompt systeme strict :
+    - utiliser uniquement les tables autorisees
+    - ne jamais supprimer ou modifier les donnees
+    - limiter les resultats
+    - expliquer la requete
+    - signaler les incertitudes
+[ ] Envoyer la question utilisateur a l'API Claude.
+[ ] Generer le SQL.
+[ ] Executer le SQL dans DuckDB.
+[ ] Retourner :
+    - la requete
+    - les resultats
+    - une explication
+    - les limites eventuelles
+[ ] Journaliser chaque requete et son resultat.
+[ ] Ajouter une liste de questions exemples.
+
+Livrable attendu :
+- Interface ou script de questionnement
+- SQL genere et execute
+- Resultats interpretes
+- Journalisation complete
+
+------------------------------------------------------------
+10. USE CASE 8 : ASSISTANT API CLAUDE DANS VOTRE PRODUIT
+------------------------------------------------------------
+Objectif :
+Integrer l'API Claude comme fonctionnalite dans votre application.
+
+Cas d'usage possibles :
+- resume d'un document ou d'une conversation
+- classification automatique de tickets
+- extraction de donnees depuis un texte
+- generation de brouillons
+- aide a la redaction
+- detection d'anomalies
+- assistant contextuel
+- resume des changements
+- traduction controlee
+- generation de requetes SQL
+
+[ ] Choisir un seul cas d'usage a forte valeur.
+[ ] Definir les entrees utilisateur autorisees.
+[ ] Definir les donnees interdites a envoyer a l'API.
+[ ] Creer un prompt systeme clair et contraint.
+[ ] Ajouter une validation des entrees.
+[ ] Limiter la taille des contenus envoyes.
+[ ] Mettre en place une gestion des erreurs et des retries.
+[ ] Journaliser :
+    - horodatage
+    - modele utilise
+    - nombre de tokens
+    - statut
+    - erreur eventuelle
+    - identifiant de requete
+[ ] Ne pas journaliser le contenu sensible en clair.
+[ ] Ajouter un bouton ou une action visible dans l'interface.
+[ ] Tester avec des cas limites :
+    - texte vide
+    - texte tres long
+    - donnees personnelles
+    - injection de prompt
+    - erreur API
+    - reponse invalide
+[ ] Mesurer l'usage et la satisfaction.
+
+Livrable attendu :
+- Fonctionnalite IA integree
+- Controles de securite
+- Journalisation
+- Mesure de valeur
+
+------------------------------------------------------------
+11. SECURITE, QUALITE ET GOUVERNANCE
+------------------------------------------------------------
+[ ] Classer les donnees :
+    - publiques
+    - internes
+    - confidentielles
+    - donnees personnelles
+[ ] Ne jamais envoyer de donnees personnelles sensibles a l'API
+    sans base legale, minimisation et securisation.
+[ ] Anonymiser ou pseudonymiser les identifiants avant analyse.
+[ ] Utiliser des environnements separes :
+    - developpement
+    - test
+    - production
+[ ] Mettre en place des permissions minimales.
+[ ] Verrouiller les ecritures sur les donnees brutes.
+[ ] Creer des sauvegardes de la base DuckDB.
+[ ] Versionner :
+    - code
+    - SQL
+    - prompts
+    - schemas
+    - regles de qualite
+[ ] Ajouter des tests sur les transformations critiques.
+[ ] Creer une checklist avant mise en production :
+    - donnees validees
+    - secrets non exposes
+    - logs verifies
+    - resultats controlés
+    - rollback possible
+[ ] Definir un responsable humain pour chaque decision automatisee.
+
+------------------------------------------------------------
+12. FEUILLE DE ROUTE PROGRESSIVE
+------------------------------------------------------------
+Semaine 1 : Socle technique
+[ ] Installer VS Code, DuckDB et Claude Code
+[ ] Creer l'arborescence projet
+[ ] Configurer la cle API Claude
+[ ] Creer CLAUDE.md et README.md
+[ ] Importer un premier jeu de donnees reel
+[ ] Realiser un profil de qualite
+
+Semaine 2 : Premier use case
+[ ] Choisir l'analyste de donnees local
+[ ] Nettoyer les donnees
+[ ] Creer les premieres vues metier
+[ ] Ecrire 5 requetes SQL utiles
+[ ] Generer un premier rapport Markdown
+[ ] Valider les resultats manuellement
+
+Semaine 3 : Automatisation
+[ ] Industrialiser l'import
+[ ] Ajouter les controles de qualite
+[ ] Creer les rapports reproductibles
+[ ] Documenter le pipeline
+[ ] Ajouter les tests essentiels
+
+Semaine 4 : Assistant produit ou RAG
+[ ] Choisir un cas d'usage API Claude
+[ ] Definir les donnees autorisees
+[ ] Implementer un prototype limite
+[ ] Ajouter la journalisation
+[ ] Tester avec des utilisateurs internes
+[ ] Mesurer le gain obtenu
+
+Semaine 5 : Extension
+[ ] Ajouter un second use case
+[ ] Ameliorer les prompts
+[ ] Ajouter des controles de securite
+[ ] Creer un tableau de bord simple
+[ ] Documenter les decisions et limites
+
+------------------------------------------------------------
+13. CRITERES DE REUSSITE
+------------------------------------------------------------
+[ ] Un utilisateur peut obtenir une reponse fiable a une question metier.
+[ ] Les donnees brutes ne sont jamais modifiees.
+[ ] Chaque chiffre important peut etre trace jusqu'a sa requete SQL.
+[ ] Les traitements sont reproductibles.
+[ ] Les secrets ne sont jamais exposes.
+[ ] Les resultats sont verifies avant diffusion.
+[ ] Le temps necessaire pour produire une analyse diminue.
+[ ] Les erreurs de donnees sont detectees plus tot.
+[ ] La documentation reste a jour.
+[ ] Le premier use case apporte une valeur mesurable.

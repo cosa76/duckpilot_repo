@@ -1,0 +1,104 @@
+# Catalogue envoyé à l'API Claude par scripts/ask.py.
+# Seules ces vues (schéma ia) peuvent être interrogées. Aucune donnée n'est envoyée,
+# uniquement cette description. tests/test_assistant_sql.py vérifie qu'elle
+# correspond exactement aux colonnes réelles des vues.
+
+contexte = """
+Données synthétiques d'un éditeur de logiciel B2B, du 01/01/2025 au 31/10/2026.
+Montants en euros. Les montants HT sont déduits du TTC avec une TVA de 20 %.
+Seules les ventes valides (après nettoyage) sont présentes.
+"""
+
+[[table]]
+nom = "ventes"
+description = "Une ligne par vente valide, enrichie du client et du produit."
+[table.colonnes]
+vente_id = "Identifiant de la vente (unique)"
+date_vente = "Date de la vente (DATE)"
+mois = "Premier jour du mois de la vente (DATE), pour regrouper par mois"
+client_id = "Identifiant client, jointure avec clients.client_id"
+segment = "Segment du client : PME, ETI, Grand compte, Particulier, Inconnu"
+ville = "Ville du client"
+produit_id = "Identifiant produit, jointure avec produits.produit_id"
+produit = "Libellé du produit"
+categorie = "Catégorie : Logiciel, Formation, Support, Materiel, Conseil"
+canal = "Canal de vente : web, magasin, telephone, partenaire"
+quantite = "Quantité vendue (1 à 100)"
+remise_pct = "Remise appliquée, en fraction (0.1 = 10 %)"
+montant_ht = "Montant hors taxes en euros"
+montant_ttc = "Montant toutes taxes comprises en euros"
+marge_ht = "Marge hors taxes en euros (montant HT moins coût)"
+
+[[table]]
+nom = "clients"
+description = "Une ligne par client avec son historique d'achat. Pas de données personnelles."
+[table.colonnes]
+client_id = "Identifiant client (unique)"
+segment = "Segment : PME, ETI, Grand compte, Particulier, Inconnu"
+ville = "Ville"
+date_inscription = "Date d'inscription (DATE), NULL si invalide"
+premier_achat = "Date du premier achat valide, NULL si aucun"
+dernier_achat = "Date du dernier achat valide, NULL si aucun"
+nb_achats = "Nombre de ventes valides"
+ca_ht = "Chiffre d'affaires HT cumulé en euros"
+statut_achat = "actif (achat dans les 90 jours avant la dernière vente connue), inactif, sans_achat"
+doublon_probable = "true si ce client semble être le doublon d'un autre (même email). À exclure des comptages de clients"
+
+[[table]]
+nom = "produits"
+description = "Catalogue produits."
+[table.colonnes]
+produit_id = "Identifiant produit (unique)"
+libelle = "Libellé"
+categorie = "Catégorie : Logiciel, Formation, Support, Materiel, Conseil"
+prix_unitaire_ht = "Prix unitaire HT en euros"
+cout_unitaire_ht = "Coût unitaire HT en euros"
+
+[[table]]
+nom = "evenements"
+description = "Évènements d'usage de l'application, une ligne par évènement."
+[table.colonnes]
+event_id = "Identifiant de l'évènement (unique)"
+user_id = "Identifiant utilisateur, égal à clients.client_id"
+event_name = "login, view_dashboard, run_query, export_csv, create_report, share_report, invite_user, error, logout"
+event_ts = "Horodatage (TIMESTAMP)"
+event_date = "Date de l'évènement (DATE)"
+app_version = "Version de l'application (3.1.0 à 4.0.0, ou inconnue)"
+plateforme = "web, windows, macos, ios, android"
+session_id = "Identifiant de session"
+duree_ms = "Durée en millisecondes (renseignée pour run_query)"
+code_erreur = "Code d'erreur (renseigné pour error) : E500, E404, E403, TIMEOUT"
+nb_lignes = "Nombre de lignes exportées (renseigné pour export_csv)"
+
+[[table]]
+nom = "usage_mensuel"
+description = "Agrégat mensuel de l'usage de l'application."
+[table.colonnes]
+mois = "Premier jour du mois (DATE)"
+utilisateurs_actifs = "Utilisateurs distincts avec au moins un évènement hors logout"
+nb_evenements = "Nombre d'évènements"
+nb_erreurs = "Nombre d'évènements error"
+nb_requetes = "Nombre d'évènements run_query"
+nb_rapports_crees = "Nombre d'évènements create_report"
+
+[[table]]
+nom = "tickets"
+description = "Tickets du support client."
+[table.colonnes]
+ticket_id = "Identifiant du ticket (unique)"
+client_id = "Identifiant client, jointure avec clients.client_id"
+date_ouverture = "Date et heure d'ouverture (TIMESTAMP)"
+date_resolution = "Date et heure de résolution, NULL si non résolu ou incohérent"
+categorie = "Bug, Facturation, Acces, Question, Performance"
+priorite = "basse, normale, haute, critique, non_renseignee"
+statut = "ouvert, en_cours, resolu, ferme"
+satisfaction = "Note de satisfaction de 1 à 5, NULL si absente"
+delai_resolution_h = "Délai de résolution en heures, calculé seulement pour les tickets résolus ou fermés cohérents"
+
+[jointures]
+autorisees = [
+    "ventes.client_id = clients.client_id",
+    "ventes.produit_id = produits.produit_id",
+    "tickets.client_id = clients.client_id",
+    "evenements.user_id = clients.client_id",
+]

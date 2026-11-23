@@ -1,0 +1,3 @@
+#!/bin/sh
+# Bloque le commit si un secret ou un fichier de données est indexé.
+python scripts/securite.py --staged

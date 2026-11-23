@@ -1,0 +1,18 @@
+# Contrôles appliqués à tout appel à l'API Claude (scripts/claude_client.py).
+
+[budget]
+# Plafonds par jour calendaire, tous usages confondus, calculés depuis logs/api_calls.jsonl.
+max_appels_jour = 200
+max_tokens_jour = 2000000
+
+[envoi]
+# Taille maximale du contenu envoyé (prompt système + messages), en caractères.
+max_caracteres = 60000
+# Motifs interdits dans tout contenu envoyé. Un envoi qui en contient un est bloqué
+# avant de partir. Les identifiants clients (C00001) sont autorisés : ce sont des pseudonymes.
+motifs_interdits = [
+    { nom = "email", regex = '[^@\s"]+@[^@\s"]+\.[a-zA-Z]{2,}' },
+    { nom = "telephone", regex = '(?:\+33|\b0)\s?[1-9](?:[ .-]?\d{2}){4}\b' },
+    { nom = "iban", regex = '\bFR\d{2}(?:\s?\d{4}){5}' },
+    { nom = "cle_api", regex = 'sk-ant-[A-Za-z0-9_-]{10,}' },
+]

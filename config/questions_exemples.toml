@@ -1,0 +1,119 @@
+# Questions d'exemple de l'assistant SQL, avec une requête de référence écrite à la main.
+# scripts/eval_assistant.py pose chaque question à l'assistant et compare son résultat
+# à celui de la référence (toutes les valeurs de la référence doivent être retrouvées).
+# hors_perimetre = true : l'assistant doit refuser de répondre.
+
+[[question]]
+id = "Q01"
+question = "Quel est le chiffre d'affaires HT total ?"
+reference = "SELECT round(sum(montant_ht), 2) FROM ventes"
+
+[[question]]
+id = "Q02"
+question = "Quel est le chiffre d'affaires HT par catégorie de produit ?"
+reference = "SELECT categorie, round(sum(montant_ht), 2) FROM ventes GROUP BY 1"
+
+[[question]]
+id = "Q03"
+question = "Quel est le taux de marge HT par canal de vente, en pourcentage ?"
+reference = "SELECT canal, round(100 * sum(marge_ht) / sum(montant_ht), 1) FROM ventes GROUP BY 1"
+
+[[question]]
+id = "Q04"
+question = "Quel a été le meilleur mois en chiffre d'affaires HT ?"
+reference = "SELECT strftime(mois, '%Y-%m'), round(sum(montant_ht), 2) AS ca FROM ventes GROUP BY mois ORDER BY ca DESC LIMIT 1"
+
+[[question]]
+id = "Q05"
+question = "Combien de clients actifs par segment, hors doublons ?"
+reference = "SELECT segment, count(*) FROM clients WHERE statut_achat = 'actif' AND NOT doublon_probable GROUP BY 1"
+
+[[question]]
+id = "Q06"
+question = "Quels sont les 5 clients qui ont généré le plus de chiffre d'affaires HT ?"
+reference = "SELECT client_id, round(ca_ht, 2) FROM clients WHERE NOT doublon_probable ORDER BY ca_ht DESC LIMIT 5"
+
+[[question]]
+id = "Q07"
+question = "Quel est le délai médian de résolution des tickets, en heures, par priorité ?"
+reference = "SELECT priorite, round(median(delai_resolution_h), 1) FROM tickets GROUP BY 1"
+
+[[question]]
+id = "Q08"
+question = "Quel est le taux d'erreur par version de l'application, en pourcentage des évènements ?"
+reference = "SELECT app_version, round(100.0 * count(*) FILTER (WHERE event_name = 'error') / count(*), 2) FROM evenements GROUP BY 1"
+
+[[question]]
+id = "Q09"
+question = "Combien d'utilisateurs actifs en octobre 2026 ?"
+reference = "SELECT utilisateurs_actifs FROM usage_mensuel WHERE mois = DATE '2026-10-01'"
+
+[[question]]
+id = "Q10"
+question = "Quelle est la satisfaction moyenne des tickets par catégorie de ticket ?"
+reference = "SELECT categorie, round(avg(satisfaction), 2) FROM tickets GROUP BY 1"
+
+[[question]]
+id = "Q11"
+question = "Quel est le chiffre d'affaires HT des clients qui ont ouvert au moins un ticket critique ?"
+reference = """
+SELECT round(sum(v.montant_ht), 2) FROM ventes v
+WHERE v.client_id IN (SELECT client_id FROM tickets WHERE priorite = 'critique')
+"""
+
+[[question]]
+id = "Q12"
+question = "Quel est le panier moyen des abonnements annuels premium ?"
+hors_perimetre = true
+
+# ---------- Questions plus difficiles (ajoutées en semaine 5) ----------
+
+[[question]]
+id = "Q13"
+question = "Quelle est la variation en pourcentage du CA HT entre septembre et octobre 2026 ?"
+reference = """
+SELECT round(100 * (sum(montant_ht) FILTER (WHERE mois = DATE '2026-10-01')
+                  - sum(montant_ht) FILTER (WHERE mois = DATE '2026-09-01'))
+             / sum(montant_ht) FILTER (WHERE mois = DATE '2026-09-01'), 1)
+FROM ventes
+"""
+
+[[question]]
+id = "Q14"
+question = "Quelle part du CA HT 2025 vient du segment Grand compte, en pourcentage ?"
+reference = """
+SELECT round(100 * sum(montant_ht) FILTER (WHERE segment = 'Grand compte') / sum(montant_ht), 1)
+FROM ventes WHERE year(date_vente) = 2025
+"""
+
+[[question]]
+id = "Q15"
+question = "Combien de clients ont acheté au moins une fois mais n'ont jamais ouvert de ticket ?"
+reference = """
+SELECT count(*) FROM clients c
+WHERE nb_achats > 0 AND NOT doublon_probable
+  AND NOT EXISTS (SELECT 1 FROM tickets t WHERE t.client_id = c.client_id)
+"""
+
+[[question]]
+id = "Q16"
+question = "Quel est le taux d'erreur en 2026 sur la plateforme ios, en pourcentage des évènements ?"
+reference = """
+SELECT round(100.0 * count(*) FILTER (WHERE event_name = 'error') / count(*), 2)
+FROM evenements WHERE plateforme = 'ios' AND year(event_date) = 2026
+"""
+
+[[question]]
+id = "Q17"
+question = "Quel est le CA HT cumulé mois par mois en 2026 ?"
+reference = """
+SELECT strftime(mois, '%Y-%m'), round(sum(sum(montant_ht)) OVER (ORDER BY mois), 2)
+FROM ventes WHERE year(date_vente) = 2026 GROUP BY mois
+"""
+
+[[question]]
+id = "Q18"
+question = "Quel est le nombre moyen de ventes par client acheteur en 2025 ?"
+reference = """
+SELECT round(count(*) / count(DISTINCT client_id), 2) FROM ventes WHERE year(date_vente) = 2025
+"""
