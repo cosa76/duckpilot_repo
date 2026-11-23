@@ -134,9 +134,10 @@ def main() -> None:
         f"exécution `{run_id()}`. "
         f"Période couverte : {dmin:%d/%m/%Y} au {dmax:%d/%m/%Y}.",
         "",
-        "> **Données synthétiques.** Les fichiers sources sont générés avec des tirages "
-        "uniformes : les tendances observées ne reflètent aucune réalité métier. "
-        "Ce rapport valide la chaîne de traitement, pas une décision.",
+        "> **Données fictives.** Les fichiers sources sont générés par "
+        "`scripts/generate_realistic_data.py` : les comportements sont réalistes "
+        "(saisonnalité, croissance, churn, incidents de version) mais aucun chiffre "
+        "ne décrit une entreprise réelle.",
         "",
         "## Synthèse",
         "",
@@ -256,7 +257,7 @@ def main() -> None:
               "Mêmes empreintes et mêmes fichiers SQL = mêmes chiffres :", "",
               md_table(["table", "fichier", "sha256", "lignes", "import"], sources), "",
               "## Limites", "",
-              "- Données synthétiques, distributions uniformes : aucune conclusion métier possible.",
+              "- Données fictives : les tendances sont simulées, aucune décision ne doit s'appuyer dessus.",
               "- Montants HT déduits du TTC avec une TVA supposée à 20 %.",
               "- Ventes en USD exclues faute de taux de change.",
               "- Horodatages epoch interprétés en UTC (décalage possible d'une à deux heures).",

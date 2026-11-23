@@ -10,7 +10,7 @@ Langue du projet : français.
 - Claude Code aide à écrire le code, le SQL et les transformations.
 - L'API Claude est réservée au raisonnement, à la synthèse, à la classification,
   à l'extraction et aux rapports. Jamais de données personnelles envoyées à l'API.
-- Les données actuelles de `data/raw/` sont synthétiques (voir `docs/anomalies_injectees.md`).
+- Les données actuelles de `data/raw/` sont fictives mais réalistes (`scripts/generate_realistic_data.py`, voir `docs/donnees_realistes.md` et `docs/anomalies_injectees.md`).
 
 ## Arborescence
 
@@ -71,7 +71,7 @@ prompts/        prompts versionnés envoyés à l'API Claude
 Autorisées sans demander :
 - `python scripts/run_pipeline.py` et chacune de ses étapes (`import_raw.py`, `build.py`, `quality.py`, `profile_raw.py`, `report.py`, `execution_report.py`)
 - `python scripts/rapport_produit.py --sans-ia`, `python scripts/dashboard.py`, `python scripts/securite.py`
-- `python scripts/generate_synthetic_data.py` (refuse d'écraser data/raw sans `--force` : ne pas passer `--force` sans accord)
+- `python scripts/generate_realistic_data.py` ou `generate_synthetic_data.py` (refusent d'écraser data/raw sans `--force` : ne pas passer `--force` sans accord)
 - `python -m pytest`
 - lecture DuckDB en Python avec `read_only=True` (le CLI 1.x installé ne lit pas une base écrite par DuckDB 2.0)
 

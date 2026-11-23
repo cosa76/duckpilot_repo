@@ -236,8 +236,9 @@ def rediger(ind: dict, client=None):
     """Appelle Claude et renvoie (données, appel, version du prompt)."""
     version, systeme = claude_client.charger_prompt(
         "rapport_produit",
-        contexte="données synthétiques générées pour tester la chaîne : distributions uniformes, "
-                 "aucune saisonnalité réelle. Les écarts observés sont surtout du bruit.")
+        contexte="données fictives d'un éditeur de logiciel B2B, simulées avec des comportements "
+                 "réalistes (saisonnalité, croissance, churn, sorties de versions). Elles ne décrivent "
+                 "aucune entreprise réelle.")
     if client is None:
         client = anthropic.Anthropic(api_key=api_key())
     messages = [{"role": "user", "content": "<indicateurs>\n"

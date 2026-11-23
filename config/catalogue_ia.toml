@@ -4,7 +4,9 @@
 # correspond exactement aux colonnes réelles des vues.
 
 contexte = """
-Données synthétiques d'un éditeur de logiciel B2B, du 01/01/2025 au 31/10/2026.
+Données fictives mais réalistes d'un éditeur de logiciel B2B, du 01/01/2025 au 31/10/2026.
+Activité saisonnière (creux en août), licences annuelles renouvelées, versions de l'application
+déployées progressivement.
 Montants en euros. Les montants HT sont déduits du TTC avec une TVA de 20 %.
 Seules les ventes valides (après nettoyage) sont présentes.
 """
@@ -49,7 +51,7 @@ nom = "produits"
 description = "Catalogue produits."
 [table.colonnes]
 produit_id = "Identifiant produit (unique)"
-libelle = "Libellé"
+libelle = "Libellé du produit (ex. Licence Pro (annuelle), Audit data (jour))"
 categorie = "Catégorie : Logiciel, Formation, Support, Materiel, Conseil"
 prix_unitaire_ht = "Prix unitaire HT en euros"
 cout_unitaire_ht = "Coût unitaire HT en euros"
@@ -63,7 +65,7 @@ user_id = "Identifiant utilisateur, égal à clients.client_id"
 event_name = "login, view_dashboard, run_query, export_csv, create_report, share_report, invite_user, error, logout"
 event_ts = "Horodatage (TIMESTAMP)"
 event_date = "Date de l'évènement (DATE)"
-app_version = "Version de l'application (3.1.0 à 4.0.0, ou inconnue)"
+app_version = "Version de l'application : 3.1.0, 3.2.0, 3.2.1, 3.3.0, 4.0.0, 4.0.1, ou inconnue"
 plateforme = "web, windows, macos, ios, android"
 session_id = "Identifiant de session"
 duree_ms = "Durée en millisecondes (renseignée pour run_query)"

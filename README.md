@@ -13,7 +13,7 @@ Socle local d'analyse de données : fichiers sources, DuckDB, scripts Python et 
 Depuis la racine du projet :
 
 ```powershell
-python scripts/generate_synthetic_data.py   # crée les fichiers dans data/raw/ (synthétiques)
+python scripts/generate_realistic_data.py --force   # données fictives réalistes dans data/raw/
 python scripts/run_pipeline.py              # sauvegarde, import, staging, qualité, profil, rapports
 python -m pytest                            # tests (sans appel à l'API)
 ```
@@ -25,6 +25,8 @@ Le pipeline s'arrête si une règle de qualité bloquante échoue.
 Détail des étapes, garanties et journaux : `docs/pipeline.md`.
 
 La première étape est à sauter dès que des fichiers réels sont déposés dans `data/raw/`.
+Le jeu actuel et les questions conseillées pour tester l'assistant : `docs/donnees_realistes.md`.
+L'ancien jeu uniforme reste disponible : `python scripts/generate_synthetic_data.py --force`.
 
 ## Ce qui existe
 

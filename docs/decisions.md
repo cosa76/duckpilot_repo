@@ -106,11 +106,22 @@ les options écartées et ce qui pourrait la remettre en cause.
   refuse d'écraser sans `--force`. Scan des secrets et des fichiers de données
   (`scripts/securite.py`), branché en hook git pre-commit (`.githooks/`).
 
+### D14. Jeu de données réaliste pour tester l'assistant (après la semaine 5)
+
+- **Choix** : `scripts/generate_realistic_data.py` remplace le jeu uniforme dans `data/raw/`.
+  Même format de fichiers, donc aucun changement du pipeline. Comportements simulés :
+  saisonnalité, croissance, churn par segment, renouvellements annuels, comptes inégaux,
+  déploiement des versions avec deux régressions corrigées, tickets liés aux erreurs
+  (`docs/donnees_realistes.md`).
+- **Pourquoi** : sur des données uniformes, une bonne et une mauvaise réponse se ressemblent.
+  Avec des tendances connues, on peut juger si une réponse de l'assistant est plausible.
+- **Conséquence** : D01 reste vraie (aucune donnée réelle), mais les tendances ont maintenant
+  un sens interne. L'ancien générateur est conservé.
+
 ## Limites connues
 
-- **Données** : synthétiques et uniformes. Les indicateurs produit portent sur de petits
-  effectifs (environ 200 évènements par semaine). La rétention par cohorte (J1, J7, J30)
-  n'est pas calculable : tous les utilisateurs apparaissent dès janvier 2025.
+- **Données** : fictives. Depuis D14, comportements réalistes mais simulés : un client = un utilisateur,
+  pas d'abonnements explicites, pas d'historique d'achat avant 2025.
 - **Assistant SQL** : 18 questions d'évaluation, c'est peu. Un `;` dans une chaîne de
   caractères est refusé à tort. L'interprétation des résultats reste humaine.
 - **Rapport produit** : la vérification contrôle les chiffres, pas le raisonnement.
