@@ -87,6 +87,8 @@ python -m pytest
 | `tests/test_qualite.py` | moteur de règles, seuils, validité du fichier de règles, règles bloquantes sur la base réelle |
 | `tests/test_raw_import.py` | aucune ligne perdue entre fichiers et tables raw |
 | `tests/test_staging.py` | conservation, clés uniques, plages, intégrité référentielle, absence de PII |
+| `tests/test_assistant_sql.py` | garde-fous SQL, catalogue conforme aux vues, refus des PII, parcours avec client API simulé |
+| `tests/test_securite.py` | blocage des envois sensibles, budget, journal sans contenu, scan des secrets, vérification des chiffres du rapport produit |
 
 Les tests sur la base réelle sont ignorés si le pipeline n'a pas encore tourné.
 
